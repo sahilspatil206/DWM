@@ -1,0 +1,83 @@
+1. Roll-up (Summarization)
+Definition: Roll-up summarizes data from a lower level to a higher level.
+
+Example: City → State → Country
+SELECT
+    l.State,
+    SUM(f.Total_Billed_Amount) AS Total_Sales
+FROM fact_table f
+JOIN location l
+ON f.Location_ID = l.Location_ID
+GROUP BY l.State;
+
+
+This combines city-level sales into state-level totals.
+
+2. Drill-down (Detailed Analysis)
+Definition: Drill-down moves from summarized data to more detailed data.
+
+Example: State → City
+SELECT
+    l.State,
+    l.City,
+    SUM(f.Total_Billed_Amount) AS Total_Sales
+FROM fact_table f
+JOIN location l
+ON f.Location_ID = l.Location_ID
+GROUP BY l.State, l.City;
+
+
+This displays sales for each city within its state.
+
+3. Slice (Single Dimension Filter)
+Definition: Slice selects data for one particular value of a dimension.
+
+Example: Sales only for Pune.
+SELECT
+    l.City,
+    SUM(f.Total_Billed_Amount) AS Total_Sales
+FROM fact_table f
+JOIN location l
+ON f.Location_ID = l.Location_ID
+WHERE l.City = 'Pune'
+GROUP BY l.City;
+
+
+This filters sales to one city.
+4. Dice (Multiple Dimension Filters)
+Definition: Dice selects a subset of data using multiple conditions on dimensions.
+
+Example: Sales in Pune and Mumbai for Electronics.
+SELECT
+    l.City,
+    p.Category,
+    SUM(f.Total_Billed_Amount) AS Total_Sales
+FROM fact_table f
+JOIN location l
+ON f.Location_ID = l.Location_ID
+JOIN product p
+ON f.Product_ID = p.Product_ID
+WHERE l.City IN ('Pune', 'Mumbai')
+AND p.Category = 'Electronics'
+GROUP BY l.City, p.Category;
+
+
+This filters by both location and product category.
+5. Pivot (Rotate Data)
+Definition: Pivot changes the presentation of data by converting row values into columns.
+
+Example: Compare sales across cities.
+SELECT
+    p.Category,
+    SUM(CASE WHEN l.City = 'Pune'
+        THEN f.Total_Billed_Amount ELSE 0 END) AS Pune,
+    SUM(CASE WHEN l.City = 'Mumbai'
+        THEN f.Total_Billed_Amount ELSE 0 END) AS Mumbai,
+    SUM(CASE WHEN l.City = 'Delhi'
+        THEN f.Total_Billed_Amount ELSE 0 END) AS Delhi
+FROM fact_table f
+JOIN location l
+ON f.Location_ID = l.Location_ID
+JOIN product p
+ON f.Product_ID = p.Product_ID
+GROUP BY p.Category;
